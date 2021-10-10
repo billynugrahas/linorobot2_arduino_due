@@ -19,7 +19,7 @@
 #include "src/firmware/src/encoder/encoder.h"
 #include "src/firmware/src/kinematics/kinematics.h"
 
-#define SAMPLE_TIME 10 //s
+#define SAMPLE_TIME 20 //s
 
 Encoder motor1_encoder(MOTOR1_ENCODER_A, MOTOR1_ENCODER_B, COUNTS_PER_REV1, MOTOR1_ENCODER_INV);
 Encoder motor2_encoder(MOTOR2_ENCODER_A, MOTOR2_ENCODER_B, COUNTS_PER_REV2, MOTOR2_ENCODER_INV);
@@ -84,12 +84,44 @@ void loop()
             Serial.println("\r\n");
             sampleMotors(1);
         }
+        else if(character == '\r' and cmd.equals("check\r"))
+        {
+            cmd = "";
+            Serial.println("\r\n");
+            check();
+        }
         else if(character == '\r')
         {
             Serial.println("");
             cmd = "";
         }
     }
+}
+
+void check()
+{
+    Serial.print("SPINNING ");
+
+    unsigned long start_time = micros();
+    unsigned long last_status = micros();
+
+    while(true)
+    {
+        encoders[1]->write(0);
+        Serial.print("Encoder 1: ");
+        Serial.println(encoders[0]->read());
+        // encoders[2]->write(0);
+        // Serial.print("Encoder 2: ");
+        // Serial.println(encoders[1]->read());
+
+        if(micros() - start_time >= SAMPLE_TIME * 1000000)
+        {
+            motors[1]->spin(0);
+            motors[2]->spin(0);
+            Serial.println("");
+            break;
+        }
+    }   
 }
 
 void sampleMotors(bool show_summary)
@@ -156,18 +188,18 @@ void printSummary()
 
     Serial.println("================COUNTS PER REVOLUTION=================");
     Serial.print(labels[0]);
-    Serial.print(counts_per_rev[0]);
+    Serial.print((counts_per_rev[0]));
     Serial.print(" ");
 
     Serial.print(labels[1]);
-    Serial.println(counts_per_rev[1]);
+    Serial.println((counts_per_rev[1]));
     
     Serial.print(labels[2]);
-    Serial.print(counts_per_rev[2]);
+    Serial.print((counts_per_rev[2]));
     Serial.print(" ");
 
     Serial.print(labels[3]);
-    Serial.println(counts_per_rev[3]);
+    Serial.println((counts_per_rev[3]));
     Serial.println("");
 
     Serial.println("====================MAX VELOCITIES====================");
